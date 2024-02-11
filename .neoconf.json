@@ -1,0 +1,12 @@
+{
+  "neodev": {},
+  "lspconfig": {
+    "lua_ls": {
+      "Lua.runtime.version": "LuaJIT",
+      "Lua.workspace.checkThirdParty": false,
+      "Lua.diagnostics.globals": [
+        "vim"
+      ]
+    }
+  }
+}
