@@ -7,7 +7,7 @@ local M = {
     filename = "global.md",
     ---@diagnostic disable-next-line: param-type-mismatch
     directory = vim.fs.joinpath(vim.fn.stdpath("data"), "global-note"),
-    title = "Global",
+    title = "Global note",
     command_name = "GlobalNote",
     get_window_config = function()
       local window_height = vim.api.nvim_list_uis()[1].height
