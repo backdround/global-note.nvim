@@ -99,15 +99,15 @@ require("global-note").setup({
       title = "List of projects",
       command_name = "ProjectsNote",
       -- All not specified options are used from the root.
-    }
+    },
 
     food = {
       filename = "want-to-eat.md",
       title = "List of food",
       command_name = "FoodNote",
       -- All not specified options are used from the root.
-    }
-  }
+    },
+  },
 })
 
 -- Functions to open:
@@ -188,7 +188,7 @@ global_note.setup({
       end,
       title = "Project note",
       command_name = "ProjectNote",
-    }
+    },
   }
 })
 
