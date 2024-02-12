@@ -3,13 +3,13 @@ local utils = require("global-note.utils")
 local M = {
   _inited = false,
 
-  _default_preset_default_options = {
+  _default_preset_default_values = {
     filename = "global.md",
     ---@diagnostic disable-next-line: param-type-mismatch
     directory = vim.fs.joinpath(vim.fn.stdpath("data"), "global-note"),
     title = "Global note",
     command_name = "GlobalNote",
-    get_window_config = function()
+    window_config = function()
       local window_height = vim.api.nvim_list_uis()[1].height
       local window_width = vim.api.nvim_list_uis()[1].width
       return {
@@ -29,13 +29,13 @@ local M = {
 }
 
 ---@class GlobalNote_Preset
----@field filename? string|fun(): string Filename of the note.
----@field directory? string Directory to keep notes.
----@field title? string|fun(): string Floating window title.
+---@field filename string|fun(): string Filename of the note.
+---@field directory string|fun(): string Directory to keep notes.
+---@field title string|fun(): string Floating window title.
 ---@field command_name? string Ex command name.
----@field get_window_config? fun(): table It should return a nvim_open_win config.
----@field post_open? function It's called after the window creation.
----@field autosave? boolean Whether to use autosave.
+---@field window_config table|fun(): table A nvim_open_win config.
+---@field post_open fun() It's called after the window creation.
+---@field autosave boolean Whether to use autosave.
 
 ---@param preset_name? string
 ---@param preset GlobalNote_Preset
@@ -43,31 +43,31 @@ M._setup_preset = function(preset_name, preset)
   vim.validate({
     ["options.filename"] = {
       preset.filename,
-      { "string", "function", "nil" },
+      { "string", "function" },
     },
     ["options.directory"] = {
       preset.directory,
-      { "string", "nil" },
+      { "string", "function" },
     },
     ["options.title"] = {
       preset.title,
-      { "string", "function", "nil" },
+      { "string", "function" },
     },
     ["options.command_name"] = {
       preset.command_name,
       { "string", "nil" },
     },
-    ["options.get_window_config"] = {
-      preset.get_window_config,
-      { "function", "nil" },
+    ["options.window_config"] = {
+      preset.window_config,
+      { "table", "function" },
     },
     ["options.post_open"] = {
       preset.post_open,
-      { "function", "nil" },
+      { "function" },
     },
     ["options.autosave"] = {
       preset.autosave,
-      { "boolean", "nil" },
+      { "boolean" },
     },
   })
 
@@ -88,16 +88,25 @@ M._setup_preset = function(preset_name, preset)
   end
 end
 
----@class GlobalNote_Options: GlobalNote_Preset
----@field additional_presets? { [string]: GlobalNote_Preset }
+---@class GlobalNote_UserPreset
+---@field filename? string|fun(): string Filename of the note.
+---@field directory? string|fun(): string Directory to keep notes.
+---@field title? string|fun(): string Floating window title.
+---@field command_name? string Ex command name.
+---@field window_config? table|fun(): table A nvim_open_win config.
+---@field post_open? fun() It's called after the window creation.
+---@field autosave? boolean Whether to use autosave.
 
----@param options? GlobalNote_Options
+---@class GlobalNote_UserConfig: GlobalNote_UserPreset
+---@field additional_presets? { [string]: GlobalNote_UserPreset }
+
+---@param options? GlobalNote_UserConfig
 M.setup = function(options)
   local user_options = vim.deepcopy(options or {})
 
   -- Setup default preset
   M._default_preset =
-    vim.tbl_extend("force", M._default_preset_default_options, user_options)
+    vim.tbl_extend("force", M._default_preset_default_values, user_options)
   M._default_preset.additional_presets = nil
   M._setup_preset(nil, M._default_preset)
 
@@ -115,7 +124,7 @@ M.setup = function(options)
 end
 
 ---Opens a note in a floating window.
----@param preset_name? string preset to use. If is not set, use default preset.
+---@param preset_name? string preset to use. If it's not set, use default preset.
 M.open_note = function(preset_name)
   if not M._inited then
     M.setup()
@@ -139,25 +148,36 @@ M.open_note = function(preset_name)
     end
   end
 
-  local filepath = vim.fs.joinpath(preset.directory, filename)
-  utils.ensure_directory_exists(preset.directory)
+  local directory = preset.directory
+  if type(directory) == "function" then
+    directory = directory()
+    if type(directory) ~= "string" or directory == "" then
+      error("Directory function should return a non empty string")
+    end
+  end
+
+  local filepath = vim.fs.joinpath(directory, filename)
+  utils.ensure_directory_exists(directory)
   utils.ensure_file_exists(filepath)
 
   local buffer_id = vim.fn.bufadd(filepath)
   if buffer_id == nil then
-    error("The file should exist, but it doesn't: " .. filepath)
+    error("Unreachable: The file should exist, but it doesn't: " .. filepath)
   end
 
-  local window_config = preset.get_window_config()
-  if type(window_config) ~= "table" then
-    error("Get_window_config should return a table")
+  local window_config = preset.window_config
+  if window_config == "function" then
+    window_config = window_config()
+    if type(window_config) ~= "table" then
+      error("Window_config should return a table")
+    end
   end
 
   local title = preset.title
   if type(title) == "function" then
     title = title()
     if type(title) ~= "string" and title ~= nil then
-      error("Title function should return a string or nil")
+      error("Title function should return a string or a nil")
     end
   end
 
