@@ -24,6 +24,7 @@ local M = {
       }
     end,
     post_open = function() end,
+    autosave = true,
   },
 }
 
@@ -34,6 +35,7 @@ local M = {
 ---@field command_name? string Ex command name.
 ---@field get_window_config? fun(): table It should return a nvim_open_win config.
 ---@field post_open? function It's called after the window creation.
+---@field autosave? boolean Whether to use autosave.
 
 ---@param preset_name? string
 ---@param preset GlobalNote_Preset
@@ -62,6 +64,10 @@ M._setup_preset = function(preset_name, preset)
     ["options.post_open"] = {
       preset.post_open,
       { "function", "nil" },
+    },
+    ["options.autosave"] = {
+      preset.autosave,
+      { "boolean", "nil" },
     },
   })
 
@@ -160,6 +166,21 @@ M.open_note = function(preset_name)
   end
 
   vim.api.nvim_open_win(buffer_id, true, window_config)
+
+  if preset.autosave then
+    vim.api.nvim_create_autocmd({ "BufWinLeave", "ExitPre" }, {
+      callback = function(event)
+        if event.buf ~= buffer_id then
+          return
+        end
+        if vim.bo[buffer_id].modified then
+          vim.cmd.write({ mods = { silent = true } })
+        end
+        return true
+      end
+    })
+  end
+
   preset.post_open()
 end
 
