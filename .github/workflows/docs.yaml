@@ -1,0 +1,44 @@
+name: docs
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    container: alpine:latest
+    permissions:
+      contents: write
+    steps:
+      - name: Prepare container
+        run: apk update && apk add git sed
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Change /github/home/ to ${RUNNER_TEMP} or ${{ runner.temp }}
+      # As soon as the bug https://github.com/actions/runner/issues/1984
+      # will be fixed
+      - name: Prepare README.md
+        run: sed -r "s/##(#+)/\1/g" ./README.md > /github/home/README.md
+
+      - name: panvimdoc
+        uses: kdheepak/panvimdoc@main
+        with:
+          vimdoc: global-note.nvim
+          pandoc: /github/home/README.md
+          titledatepattern: "%Y"
+
+      - name: Prepare environment to push changes
+        run: |
+          apk add bash
+          git config --global --add safe.directory "$(pwd)"
+
+      - name: Push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Auto-generate vimdoc
+          commit_user_name: github-actions[bot]
+          commit_user_email: github-actions[bot]@users.noreply.github.com
+          commit_author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
