@@ -3,14 +3,14 @@ local utils = require("global-note.utils")
 local M = {
   _inited = false,
 
-  _default_config = {
+  _default_main_preset = {
+    filename = "global.md",
     ---@diagnostic disable-next-line: param-type-mismatch
     directory = vim.fs.joinpath(vim.fn.stdpath("data"), "global-note"),
-
+    title = "Global",
     get_window_config = function()
       local window_height = vim.api.nvim_list_uis()[1].height
       local window_width = vim.api.nvim_list_uis()[1].width
-
       return {
         relative = "editor",
         border = "single",
@@ -22,56 +22,57 @@ local M = {
         col = math.floor(0.15 * window_width),
       }
     end,
-
     post_open = function() end,
   },
 }
 
----@class GlobalNote_Options
+---@class GlobalNote_Preset
+---@field filename? string|fun(): string Filename of the note.
 ---@field directory? string Directory to keep notes.
+---@field title? string Floating window title.
 ---@field get_window_config? fun(): table It should return a nvim_open_win config.
 ---@field post_open? function It's called after the window creation.
 
-M.setup = function(options)
-  options = options or {}
+---@param preset? GlobalNote_Preset
+M.setup = function(preset)
+  preset = preset or {}
   vim.validate({
+    ["options.filename"] = {
+      preset.filename,
+      { "string", "function", "nil" },
+    },
     ["options.directory"] = {
-      options.directory,
+      preset.directory,
+      { "string", "nil" },
+    },
+    ["options.title"] = {
+      preset.title,
       { "string", "nil" },
     },
     ["options.get_window_config"] = {
-      options.get_window_config,
+      preset.get_window_config,
       { "function", "nil" },
     },
     ["options.post_open"] = {
-      options.post_open,
+      preset.post_open,
       { "function", "nil" },
     },
   })
 
-  M._directory = options.directory or M._default_config.directory
-  M._get_window_config = options.get_window_config
-    or M._default_config.get_window_config
-  M._post_open = options.post_open or M._default_config.post_open
-
-  utils.ensure_directory_exists(M._directory)
+  M._main_preset = vim.tbl_extend("force", M._default_main_preset, preset)
   M._inited = true
 end
 
----Opens the given note in a floating window.
----@param filename string filename
----@param title? string title for a floating window.
-M.open_note = function(filename, title)
-  vim.validate({
-    filename = { filename, "string" },
-    title = { title, { "string", "nil" } },
-  })
-
+---Opens default preset note in a floating window.
+M.open_note = function()
   if not M._inited then
     M.setup()
   end
 
-  local filepath = vim.fs.joinpath(M._directory, filename)
+  local preset = M._main_preset
+
+  local filepath = vim.fs.joinpath(preset.directory, preset.filename)
+  utils.ensure_directory_exists(preset.directory)
   utils.ensure_file_exists(filepath)
 
   local buffer_id = vim.fn.bufadd(filepath)
@@ -79,13 +80,13 @@ M.open_note = function(filename, title)
     error("The file should exist, but it doesn't: " .. filepath)
   end
 
-  local window_config = M._get_window_config()
-  if title ~= nil then
-    window_config.title = title
+  local window_config = preset.get_window_config()
+  if preset.title ~= nil then
+    window_config.title = preset.title
   end
 
   vim.api.nvim_open_win(buffer_id, true, window_config)
-  M._post_open()
+  preset.post_open()
 end
 
 return M
