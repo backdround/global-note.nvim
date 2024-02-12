@@ -8,6 +8,7 @@ local M = {
     ---@diagnostic disable-next-line: param-type-mismatch
     directory = vim.fs.joinpath(vim.fn.stdpath("data"), "global-note"),
     title = "Global",
+    command_name = "GlobalNote",
     get_window_config = function()
       local window_height = vim.api.nvim_list_uis()[1].height
       local window_width = vim.api.nvim_list_uis()[1].width
@@ -30,6 +31,7 @@ local M = {
 ---@field filename? string|fun(): string Filename of the note.
 ---@field directory? string Directory to keep notes.
 ---@field title? string Floating window title.
+---@field command_name? string Ex command name.
 ---@field get_window_config? fun(): table It should return a nvim_open_win config.
 ---@field post_open? function It's called after the window creation.
 
@@ -49,6 +51,10 @@ M.setup = function(preset)
       preset.title,
       { "string", "nil" },
     },
+    ["options.command_name"] = {
+      preset.command_name,
+      { "string", "nil" },
+    },
     ["options.get_window_config"] = {
       preset.get_window_config,
       { "function", "nil" },
@@ -60,6 +66,13 @@ M.setup = function(preset)
   })
 
   M._main_preset = vim.tbl_extend("force", M._default_main_preset, preset)
+  if M._main_preset.command_name ~= "" then
+    local desc = string.format("Open %s note in a floating window", "default")
+    vim.api.nvim_create_user_command(M._main_preset.command_name, M.open_note, {
+      nargs = 0,
+      desc = desc
+    })
+  end
   M._inited = true
 end
 
