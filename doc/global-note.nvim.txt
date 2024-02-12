@@ -1,0 +1,218 @@
+*global-note.nvim.txt*            For NVIM v0.8.0            Last change: 2024
+
+==============================================================================
+Table of Contents                         *global-note.nvim-table-of-contents*
+
+1. Global-note.nvim                        |global-note.nvim-global-note.nvim|
+2. Simple configuration                |global-note.nvim-simple-configuration|
+3. Options                                          |global-note.nvim-options|
+4. Additional presets                    |global-note.nvim-additional-presets|
+5. Additional project-local notes (example):|global-note.nvim-additional-project-local-notes-(example):|
+
+==============================================================================
+1. Global-note.nvim                        *global-note.nvim-global-note.nvim*
+
+It’s a simple Neovim plugin that provides a global note in a float window. It
+could also provide other global, project local, file local notes (if it’s
+required).
+
+
+==============================================================================
+2. Simple configuration                *global-note.nvim-simple-configuration*
+
+>lua
+    local global_note = require("global-note")
+    global_note.setup()
+    
+    vim.keymap.set("n", "<leader>n", global_note.open_note, {
+      desc = "Open global note",
+    })
+<
+
+
+==============================================================================
+3. Options                                          *global-note.nvim-options*
+
+click ~
+
+All options here are default:
+
+>lua
+    {
+      -- Filename to use for default note (preset).
+      -- string or fun(): string
+      filename = "global.md",
+    
+      -- Directory to keep default note (preset).
+      -- string or fun(): string
+      directory = vim.fs.joinpath(vim.fn.stdpath("data"), "global-note"),
+    
+      -- Floating window title.
+      -- string or fun(): string
+      title = "Global note",
+    
+      -- Ex command name.
+      -- string
+      command_name = "GlobalNote",
+    
+      -- A nvim_open_win config to show float window.
+      -- table or fun(): table
+      window_config = function()
+        local window_height = vim.api.nvim_list_uis()[1].height
+        local window_width = vim.api.nvim_list_uis()[1].width
+        return {
+          relative = "editor",
+          border = "single",
+          title = "Note",
+          title_pos = "center",
+          width = math.floor(0.7 * window_width),
+          height = math.floor(0.85 * window_height),
+          row = math.floor(0.05 * window_height),
+          col = math.floor(0.15 * window_width),
+        }
+      end,
+    
+      -- It's called after the window creation.
+      -- fun()
+      post_open = function() end,
+    
+    
+      -- Whether to use autosave.
+      -- boolean
+      autosave = true,
+    
+      -- Additional presets to create other global, project local, file local
+      -- and other notes.
+      -- { [name]: table } - tables there have the same fields as the current table.
+      additional_presets = {},
+    }
+<
+
+------------------------------------------------------------------------------
+
+==============================================================================
+4. Additional presets                    *global-note.nvim-additional-presets*
+
+You can use additional presets to have other global notes, project local notes,
+file local notes or anything you can come up with.
+
+A preset is a list of options that can be used during opening a note. All
+additional presets inherit `default` preset. `default` preset is a list of
+options that are in the setup’s root).
+
+Simple example:
+
+>lua
+    require("global-note").setup({
+      filename = "global.md",
+      directory = "~/notes/",
+    
+      additional_presets = {
+        projects = {
+          filename = "projects-to-do.md",
+          title = "List of projects",
+          command_name = "ProjectsNote",
+          -- All not specified options are used from the root.
+        }
+    
+        food = {
+          filename = "want-to-eat.md",
+          title = "List of food",
+          command_name = "FoodNote",
+          -- All not specified options are used from the root.
+        }
+      }
+    })
+    
+    -- Functions to open:
+    require("global-note").open_note()
+    require("global-note").open_note("projects")
+    require("global-note").open_note("food")
+    
+    -- Commands to open (command_name field):
+    -- :GlobalNote -- by default
+    -- :ProjectsNote
+    -- :FoodNote
+<
+
+------------------------------------------------------------------------------
+
+==============================================================================
+5. Additional project-local notes (example):*global-note.nvim-additional-project-local-notes-(example):*
+
+get_project_name by cwd ~
+
+>lua
+    local get_project_name = function()
+      local project_directory, err = vim.loop.cwd()
+      if project_directory == nil then
+        error(err)
+      end
+    
+      local project_name = vim.fs.basename(project_directory)
+      if project_name == nil then
+        error("Unable to get the project name")
+      end
+    
+      return project_name
+    end
+<
+
+get_project_name by git ~
+
+>lua
+    local get_project_name = function()
+      local result = vim.system({
+        "git",
+        "rev-parse",
+        "--show-toplevel",
+      }, {
+        text = true,
+      }):wait()
+    
+      if result.stderr ~= "" then
+        error(result.stderr)
+      end
+    
+      local project_directory = result.stdout:gsub("\n", "")
+    
+      local project_name = vim.fs.basename(project_directory)
+      if project_name == nil then
+        error("Unable to get the project name")
+      end
+    
+      return project_name
+    end
+<
+
+>lua
+    local global_note = require("global-note")
+    global_note.setup({
+      additional_presets = {
+        -- Presets that have the same fields as the table root (default preset).
+        project_local = {
+          filename = function()
+            return get_project_name() .. ".md"
+          end,
+          title = "Project note",
+          command_name = "ProjectNote",
+        }
+      }
+    })
+    
+    vim.keymap.set("n", "<leader><S-n>", function()
+      global_note.open_note("project_local")
+    end), {
+      desc = "Open project note",
+    })
+<
+
+------------------------------------------------------------------------------
+==============================================================================
+6. Links                                              *global-note.nvim-links*
+
+1. *global-note*: https://github.com/backdround/global-note.nvim/assets/17349169/0981e267-aa95-407e-bc6d-a23aee9ecac5
+
+Generated by panvimdoc <https://github.com/kdheepak/panvimdoc>
+
+vim:tw=78:ts=8:noet:ft=help:norl:
