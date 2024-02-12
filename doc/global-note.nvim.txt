@@ -88,7 +88,6 @@ All options here are default:
     }
 <
 
-------------------------------------------------------------------------------
 
 ==============================================================================
 4. Additional presets                    *global-note.nvim-additional-presets*
@@ -113,15 +112,15 @@ Simple example:
           title = "List of projects",
           command_name = "ProjectsNote",
           -- All not specified options are used from the root.
-        }
+        },
     
         food = {
           filename = "want-to-eat.md",
           title = "List of food",
           command_name = "FoodNote",
           -- All not specified options are used from the root.
-        }
-      }
+        },
+      },
     })
     
     -- Functions to open:
@@ -135,7 +134,6 @@ Simple example:
     -- :FoodNote
 <
 
-------------------------------------------------------------------------------
 
 ==============================================================================
 5. Additional project-local notes (example):*global-note.nvim-additional-project-local-notes-(example):*
@@ -196,7 +194,7 @@ get_project_name by git ~
           end,
           title = "Project note",
           command_name = "ProjectNote",
-        }
+        },
       }
     })
     
@@ -207,7 +205,6 @@ get_project_name by git ~
     })
 <
 
-------------------------------------------------------------------------------
 ==============================================================================
 6. Links                                              *global-note.nvim-links*
 
