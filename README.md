@@ -2,6 +2,9 @@
 It's a simple Neovim plugin that provides a global note in a float window.
 It could also provide other global, project local, file local notes (if it's required).
 
+![global-note](https://github.com/backdround/global-note.nvim/assets/17349169/0981e267-aa95-407e-bc6d-a23aee9ecac5)
+
+
 ### Simple configuration
 ```lua
 local global_note = require("global-note")
