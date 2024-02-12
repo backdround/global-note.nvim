@@ -4,8 +4,8 @@ It could also provide other global, project local, file local notes (if it's req
 
 ![global-note](https://github.com/backdround/global-note.nvim/assets/17349169/0981e267-aa95-407e-bc6d-a23aee9ecac5)
 
-
 ### Simple configuration
+
 ```lua
 local global_note = require("global-note")
 global_note.setup()
@@ -72,7 +72,11 @@ All options here are default:
 
 </details>
 
+<!-- panvimdoc-ignore-start -->
+
 ---
+
+<!-- panvimdoc-ignore-end -->
 
 ### Additional presets
 You can use additional presets to have other global notes, project
@@ -116,7 +120,12 @@ require("global-note").open_note("food")
 -- :ProjectsNote
 -- :FoodNote
 ```
+
+<!-- panvimdoc-ignore-start -->
+
 ---
+
+<!-- panvimdoc-ignore-end -->
 
 ### Additional project-local notes (example):
 <details><summary>get_project_name by cwd</summary>
@@ -189,5 +198,3 @@ end), {
   desc = "Open project note",
 })
 ```
-
----
