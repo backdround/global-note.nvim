@@ -155,6 +155,7 @@ M.open_note = function(preset_name)
       error("Directory function should return a non empty string")
     end
   end
+  directory = vim.fn.expand(directory)
 
   local filepath = vim.fs.joinpath(directory, filename)
   utils.ensure_directory_exists(directory)
