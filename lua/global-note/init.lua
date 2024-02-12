@@ -167,7 +167,7 @@ M.open_note = function(preset_name)
   end
 
   local window_config = preset.window_config
-  if window_config == "function" then
+  if type(window_config) == "function" then
     window_config = window_config()
     if type(window_config) ~= "table" then
       error("Window_config should return a table")
