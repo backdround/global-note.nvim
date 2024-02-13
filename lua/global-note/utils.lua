@@ -45,4 +45,22 @@ M.ensure_directory_exists = function(path)
   end
 end
 
+---Checks if the given buffer is opened in a floating window.
+---@param buffer_id number
+---@return number? window_id
+M.get_floating_window_id_with_buffer = function(buffer_id)
+  local window_ids = vim.api.nvim_tabpage_list_wins(0)
+
+  for _, window_id in ipairs(window_ids) do
+    local config = vim.api.nvim_win_get_config(window_id)
+    local window_buffer = vim.api.nvim_win_get_buf(window_id)
+
+    if config.relative ~= "" and window_buffer == buffer_id then
+      return window_id
+    end
+  end
+
+  return nil
+end
+
 return M

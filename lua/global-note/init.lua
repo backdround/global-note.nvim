@@ -61,9 +61,9 @@ M.setup = function(options)
   M._inited = true
 end
 
----Opens a note in a floating window.
+---Opens or closes a note in a floating window.
 ---@param preset_name? string preset to use. If it's not set, use default preset.
-M.open_note = function(preset_name)
+M.toggle_note = function(preset_name)
   if not M._inited then
     M.setup()
   end
@@ -78,7 +78,7 @@ M.open_note = function(preset_name)
     end
   end
 
-  p:open()
+  p:toggle()
 end
 
 return M

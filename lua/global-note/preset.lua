@@ -58,13 +58,13 @@ local new = function(name, options)
   local p = vim.deepcopy(options)
 
   if type(p.command_name) == "string" and p.command_name ~= "" then
-    local desc = "Open note in a floating window"
+    local desc = "Toggle note in a floating window"
     if name ~= nil then
-      desc = string.format("Open %s note in a floating window", name)
+      desc = string.format("Toggle %s note in a floating window", name)
     end
 
     vim.api.nvim_create_user_command(p.command_name, function()
-      p:open()
+      p:toggle()
     end, {
       nargs = 0,
       desc = desc
@@ -130,9 +130,14 @@ local new = function(name, options)
     }
   end
 
-  ---Expands a preset.
-  ---@param expanded_preset GlobalNote_ExpandedPreset
-  function p:_open_in_float_window(expanded_preset)
+  ---Opens or closes the preset in a floating window.
+  function p:toggle()
+    local expanded_preset = self:_expand_options()
+    if expanded_preset == nil then
+      return
+    end
+
+    -- Get buffer
     local filepath =
       vim.fs.joinpath(expanded_preset.directory, expanded_preset.filename)
     utils.ensure_directory_exists(expanded_preset.directory)
@@ -143,6 +148,14 @@ local new = function(name, options)
       error("Unreachable: The file should exist, but it doesn't: " .. filepath)
     end
 
+    -- Close window if it's already open
+    local existing_window = utils.get_floating_window_id_with_buffer(buffer_id)
+    if existing_window ~= nil then
+      vim.api.nvim_win_close(existing_window, false)
+      return
+    end
+
+    -- Open new floating window
     vim.api.nvim_open_win(buffer_id, true, expanded_preset.window_config)
 
     if expanded_preset.autosave then
@@ -160,15 +173,6 @@ local new = function(name, options)
     end
 
     expanded_preset.post_open()
-  end
-
-  ---Opens the preset in a floating window
-  function p:open()
-    local expanded_preset = self:_expand_options()
-    if expanded_preset == nil then
-      return
-    end
-    self:_open_in_float_window(expanded_preset)
   end
 
   return p
