@@ -1,4 +1,4 @@
-local presets = require("global-note.presets")
+local preset = require("global-note.preset")
 
 local M = {
   _inited = false,
@@ -44,40 +44,18 @@ local M = {
 M.setup = function(options)
   local user_options = vim.deepcopy(options or {})
 
-  local create_preset_autocmd = function(command_name, preset_name)
-    if type(command_name) ~= "string" or command_name == "" then
-      return
-    end
-
-    local open_note = function()
-      M.open_note(preset_name)
-    end
-
-    local desc = "Open note in a floating window"
-    if preset_name ~= nil then
-      desc = string.format("Open %s note in a floating window", preset_name)
-    end
-
-    vim.api.nvim_create_user_command(command_name, open_note, {
-      nargs = 0,
-      desc = desc
-    })
-  end
-
   -- Setup default preset
-  M._default_preset =
+  local default_preset_options =
     vim.tbl_extend("force", M._default_preset_default_values, user_options)
-  M._default_preset.additional_presets = nil
-  presets.validate(M._default_preset)
-  create_preset_autocmd(M._default_preset.command_name)
+  default_preset_options.additional_presets = nil
+  M._default_preset = preset.new(nil, default_preset_options)
 
-  -- Setup other presets
+  -- Setup additional presets
   M._presets = {}
   for key, value in pairs(user_options.additional_presets) do
-    M._presets[key] = vim.tbl_extend("force", M._default_preset, value)
-    M._presets[key].command_name = value.command_name
-    presets.validate(M._presets[key])
-    create_preset_autocmd(M._presets[key].command_name, key)
+    local preset_options = vim.tbl_extend("force", M._default_preset, value)
+    preset_options.command_name = value.command_name
+    M._presets[key] = preset.new(key, preset_options)
   end
 
   M._inited = true
@@ -90,18 +68,17 @@ M.open_note = function(preset_name)
     M.setup()
   end
 
-  local preset = M._default_preset
+  local p = M._default_preset
   if preset_name ~= nil and preset_name ~= "" then
-    preset = M._presets[preset_name]
-    if preset == nil then
+    p = M._presets[preset_name]
+    if p == nil then
       local template = "The preset with the name %s doesn't eixst"
       local message = string.format(template, preset_name)
       error(message)
     end
   end
 
-  local expanded_preset = presets.expand(preset)
-  presets.open_in_float_window(expanded_preset)
+  p:open()
 end
 
 return M
