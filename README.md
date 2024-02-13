@@ -59,7 +59,8 @@ All options here are default:
   post_open = function() end,
 
 
-  -- Whether to use autosave.
+  -- Whether to use autosave. Autosave saves buffer on closing window
+  -- or exiting Neovim.
   -- boolean
   autosave = true,
 
@@ -198,7 +199,7 @@ global_note.setup({
 
 vim.keymap.set("n", "<leader><S-n>", function()
   global_note.toggle_note("project_local")
-end), {
+end, {
   desc = "Toggle project note",
 })
 ```
