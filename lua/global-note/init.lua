@@ -29,9 +29,9 @@ local M = {
 }
 
 ---@class GlobalNote_UserPreset
----@field filename? string|fun(): string Filename of the note.
----@field directory? string|fun(): string Directory to keep notes.
----@field title? string|fun(): string Floating window title.
+---@field filename? string|fun(): string? Filename of the note.
+---@field directory? string|fun(): string? Directory to keep notes.
+---@field title? string|fun(): string? Floating window title.
 ---@field command_name? string Ex command name.
 ---@field window_config? table|fun(): table A nvim_open_win config.
 ---@field post_open? fun() It's called after the window creation.

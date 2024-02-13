@@ -134,12 +134,14 @@ require("global-note").open_note("food")
 local get_project_name = function()
   local project_directory, err = vim.loop.cwd()
   if project_directory == nil then
-    error(err)
+    vim.notify(err, vim.log.levels.WARN)
+    return nil
   end
 
   local project_name = vim.fs.basename(project_directory)
   if project_name == nil then
-    error("Unable to get the project name")
+    vim.notify("Unable to get the project name", vim.log.levels.WARN)
+    return nil
   end
 
   return project_name
@@ -161,14 +163,16 @@ local get_project_name = function()
   }):wait()
 
   if result.stderr ~= "" then
-    error(result.stderr)
+    vim.notify(result.stderr, vim.log.levels.WARN)
+    return nil
   end
 
   local project_directory = result.stdout:gsub("\n", "")
 
   local project_name = vim.fs.basename(project_directory)
   if project_name == nil then
-    error("Unable to get the project name")
+    vim.notify("Unable to get the project name", vim.log.levels.WARN)
+    return nil
   end
 
   return project_name

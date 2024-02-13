@@ -1,9 +1,9 @@
 local utils = require("global-note.utils")
 
 ---@class GlobalNote_PresetOptions
----@field filename string|fun(): string Filename of the note.
----@field directory string|fun(): string Directory to keep notes.
----@field title string|fun(): string Floating window title.
+---@field filename string|fun(): string? Filename of the note.
+---@field directory string|fun(): string? Directory to keep notes.
+---@field title string|fun(): string? Floating window title.
 ---@field command_name? string Ex command name.
 ---@field window_config table|fun(): table A nvim_open_win config.
 ---@field post_open fun() It's called after the window creation.
@@ -72,11 +72,16 @@ local new = function(name, options)
   end
 
   ---Expands preset fields to a finite values.
-  ---@return GlobalNote_ExpandedPreset
+  ---If user can't produce a critical value then nil is returned.
+  ---@return GlobalNote_ExpandedPreset?
   function p:_expand_options()
     local filename = self.filename
     if type(filename) == "function" then
+      ---@diagnostic disable-next-line: cast-local-type
       filename = filename()
+      if filename == nil then
+        return
+      end
       if type(filename) ~= "string" or filename == "" then
         error("Filename function should return a non empty string")
       end
@@ -84,7 +89,11 @@ local new = function(name, options)
 
     local directory = self.directory
     if type(directory) == "function" then
+      ---@diagnostic disable-next-line: cast-local-type
       directory = directory()
+      if directory == nil then
+        return
+      end
       if type(directory) ~= "string" or directory == "" then
         error("Directory function should return a non empty string")
       end
@@ -101,6 +110,7 @@ local new = function(name, options)
 
     local title = self.title
     if type(title) == "function" then
+      ---@diagnostic disable-next-line: cast-local-type
       title = title()
       if type(title) ~= "string" and title ~= nil then
         error("Title function should return a string or a nil")
@@ -155,6 +165,9 @@ local new = function(name, options)
   ---Opens the preset in a floating window
   function p:open()
     local expanded_preset = self:_expand_options()
+    if expanded_preset == nil then
+      return
+    end
     self:_open_in_float_window(expanded_preset)
   end
 
