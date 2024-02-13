@@ -170,15 +170,24 @@ local new = function(options)
     vim.w[window_id].global_note_window = expanded_preset.name
 
     if expanded_preset.autosave then
-      vim.api.nvim_create_autocmd({ "BufWinLeave", "ExitPre" }, {
-        callback = function(event)
-          if event.buf ~= buffer_id then
-            return
-          end
+      local save_file = function()
+        vim.api.nvim_buf_call(buffer_id, function()
           if vim.bo[buffer_id].modified then
             vim.cmd.write({ mods = { silent = true } })
           end
-          return true
+        end)
+      end
+
+      vim.api.nvim_create_autocmd({ "WinClosed", "ExitPre" }, {
+        callback = function(event)
+          local win_closed_event = event.event == "WinClosed"
+            and event.match == tostring(window_id)
+          local exit_pre_event = event.event == "ExitPre"
+
+          if win_closed_event or exit_pre_event then
+            save_file()
+            return true
+          end
         end,
       })
     end
