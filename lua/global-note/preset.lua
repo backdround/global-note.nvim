@@ -150,15 +150,24 @@ local new = function(options)
       error("Unreachable: The file should exist, but it doesn't: " .. filepath)
     end
 
-    -- Close window if it's already open
-    local existing_window = utils.get_floating_window_id_with_buffer(buffer_id)
-    if existing_window ~= nil then
-      vim.api.nvim_win_close(existing_window, false)
+    -- Close windows from current preset if they are already open.
+    local something_was_closed = false
+    local window_ids = vim.api.nvim_tabpage_list_wins(0)
+    for _, window_id in ipairs(window_ids) do
+      if vim.w[window_id].global_note_window == expanded_preset.name then
+        vim.api.nvim_win_close(window_id, false)
+        something_was_closed = true
+      end
+    end
+
+    if something_was_closed then
       return
     end
 
-    -- Open new floating window
-    vim.api.nvim_open_win(buffer_id, true, expanded_preset.window_config)
+    -- Open a new floating window
+    local window_id =
+      vim.api.nvim_open_win(buffer_id, true, expanded_preset.window_config)
+    vim.w[window_id].global_note_window = expanded_preset.name
 
     if expanded_preset.autosave then
       vim.api.nvim_create_autocmd({ "BufWinLeave", "ExitPre" }, {
