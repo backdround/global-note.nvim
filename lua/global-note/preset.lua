@@ -1,6 +1,7 @@
 local utils = require("global-note.utils")
 
 ---@class GlobalNote_PresetOptions
+---@field name string
 ---@field filename string|fun(): string? Filename of the note.
 ---@field directory string|fun(): string? Directory to keep notes.
 ---@field title string|fun(): string? Floating window title.
@@ -10,6 +11,7 @@ local utils = require("global-note.utils")
 ---@field autosave boolean Whether to use autosave.
 
 ---@class GlobalNote_ExpandedPreset
+---@field name string
 ---@field filename string Filename of the note.
 ---@field directory string Directory to keep notes.
 ---@field window_config table A nvim_open_win config.
@@ -19,10 +21,9 @@ local utils = require("global-note.utils")
 ---@class GlobalNote_Preset: GlobalNote_PresetOptions
 
 ---Creates a new preset from data.
----@param name? string
 ---@param options GlobalNote_PresetOptions
 ---@return GlobalNote_Preset
-local new = function(name, options)
+local new = function(options)
   vim.validate({
     ["options.filename"] = {
       options.filename,
@@ -59,8 +60,8 @@ local new = function(name, options)
 
   if type(p.command_name) == "string" and p.command_name ~= "" then
     local desc = "Toggle note in a floating window"
-    if name ~= nil then
-      desc = string.format("Toggle %s note in a floating window", name)
+    if p.name ~= "" then
+      desc = string.format("Toggle %s note in a floating window", p.name)
     end
 
     vim.api.nvim_create_user_command(p.command_name, function()
@@ -122,6 +123,7 @@ local new = function(name, options)
     end
 
     return {
+      name = self.name,
       filename = filename,
       directory = directory,
       window_config = window_config,

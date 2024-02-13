@@ -48,14 +48,16 @@ M.setup = function(options)
   local default_preset_options =
     vim.tbl_extend("force", M._default_preset_default_values, user_options)
   default_preset_options.additional_presets = nil
-  M._default_preset = preset.new(nil, default_preset_options)
+  default_preset_options.name = ""
+  M._default_preset = preset.new(default_preset_options)
 
   -- Setup additional presets
   M._presets = {}
   for key, value in pairs(user_options.additional_presets) do
     local preset_options = vim.tbl_extend("force", M._default_preset, value)
     preset_options.command_name = value.command_name
-    M._presets[key] = preset.new(key, preset_options)
+    preset_options.name = key
+    M._presets[key] = preset.new(preset_options)
   end
 
   M._inited = true
