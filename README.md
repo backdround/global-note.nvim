@@ -55,9 +55,8 @@ All options here are default:
   end,
 
   -- It's called after the window creation.
-  -- fun()
-  post_open = function() end,
-
+  -- fun(buffer_id: number, window_id: number)
+  post_open = function(_, _) end,
 
   -- Whether to use autosave. Autosave saves buffer on closing window
   -- or exiting Neovim.

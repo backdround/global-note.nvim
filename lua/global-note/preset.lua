@@ -7,7 +7,7 @@ local utils = require("global-note.utils")
 ---@field title string|fun(): string? Floating window title.
 ---@field command_name? string Ex command name.
 ---@field window_config table|fun(): table A nvim_open_win config.
----@field post_open fun() It's called after the window creation.
+---@field post_open fun(buffer_id: number, window_id: number) It's called after the window creation.
 ---@field autosave boolean Whether to use autosave.
 
 ---@class GlobalNote_ExpandedPreset
@@ -15,7 +15,7 @@ local utils = require("global-note.utils")
 ---@field filename string Filename of the note.
 ---@field directory string Directory to keep notes.
 ---@field window_config table A nvim_open_win config.
----@field post_open function It's called after the window creation.
+---@field post_open fun(buffer_id: number, window_id: number) It's called after the window creation.
 ---@field autosave boolean Whether to use autosave.
 
 ---@class GlobalNote_Preset: GlobalNote_PresetOptions
@@ -192,7 +192,7 @@ local new = function(options)
       })
     end
 
-    expanded_preset.post_open()
+    expanded_preset.post_open(buffer_id, window_id)
   end
 
   return p

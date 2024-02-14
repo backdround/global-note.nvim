@@ -24,7 +24,7 @@ local M = {
         col = math.floor(0.15 * window_width),
       }
     end,
-    post_open = function() end,
+    post_open = function(_, _) end,
     autosave = true,
   },
 }
@@ -35,7 +35,7 @@ local M = {
 ---@field title? string|fun(): string? Floating window title.
 ---@field command_name? string Ex command name.
 ---@field window_config? table|fun(): table A nvim_open_win config.
----@field post_open? fun() It's called after the window creation.
+---@field post_open? fun(buffer_id: number, window_id: number) It's called after the window creation.
 ---@field autosave? boolean Whether to use autosave.
 
 ---@class GlobalNote_UserConfig: GlobalNote_UserPreset
