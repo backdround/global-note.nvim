@@ -44,6 +44,7 @@ local M = {
 ---@param options? GlobalNote_UserConfig
 M.setup = function(options)
   local user_options = vim.deepcopy(options or {})
+  user_options.additional_presets = user_options.additional_presets or {}
 
   -- Setup default preset
   local default_preset_options =
