@@ -27,7 +27,7 @@ All options here are default:
 
   -- Directory to keep default note (preset).
   -- string or fun(): string
-  directory = vim.fs.joinpath(vim.fn.stdpath("data"), "global-note"),
+  directory = vim.fn.stdpath("data") .. "/global-note/",
 
   -- Floating window title.
   -- string or fun(): string

@@ -141,7 +141,7 @@ local new = function(options)
 
     -- Get buffer
     local filepath =
-      vim.fs.joinpath(expanded_preset.directory, expanded_preset.filename)
+      utils.joinpath(expanded_preset.directory, expanded_preset.filename)
     utils.ensure_directory_exists(expanded_preset.directory)
     utils.ensure_file_exists(filepath)
 

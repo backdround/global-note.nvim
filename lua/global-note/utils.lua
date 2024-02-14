@@ -45,4 +45,14 @@ M.ensure_directory_exists = function(path)
   end
 end
 
+---Concatenates paths
+---@vararg string
+M.joinpath = function(...)
+  if vim.fs.joinpath then
+    return vim.fs.joinpath(...)
+  end
+
+  return table.concat({ ... }, '/'):gsub('//+', '/')
+end
+
 return M

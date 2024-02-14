@@ -1,4 +1,5 @@
 local preset = require("global-note.preset")
+local utils = require("global-note.utils")
 
 local M = {
   _inited = false,
@@ -6,7 +7,7 @@ local M = {
   _default_preset_default_values = {
     filename = "global.md",
     ---@diagnostic disable-next-line: param-type-mismatch
-    directory = vim.fs.joinpath(vim.fn.stdpath("data"), "global-note"),
+    directory = utils.joinpath(vim.fn.stdpath("data"), "global-note"),
     title = "Global note",
     command_name = "GlobalNote",
     window_config = function()
