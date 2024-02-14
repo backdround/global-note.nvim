@@ -7,7 +7,7 @@ Table of Contents                         *global-note.nvim-table-of-contents*
 2. Simple configuration                |global-note.nvim-simple-configuration|
 3. Options                                          |global-note.nvim-options|
 4. Additional presets                    |global-note.nvim-additional-presets|
-5. Additional project-local notes (example):|global-note.nvim-additional-project-local-notes-(example):|
+5. Configuration usecases:          |global-note.nvim-configuration-usecases:|
 
 ==============================================================================
 1. Global-note.nvim                        *global-note.nvim-global-note.nvim*
@@ -137,9 +137,71 @@ Simple example:
 
 
 ==============================================================================
-5. Additional project-local notes (example):*global-note.nvim-additional-project-local-notes-(example):*
+5. Configuration usecases:          *global-note.nvim-configuration-usecases:*
 
-get_project_name by cwd ~
+:warning: **Usecases require some functions from below!**
+
+Project local notes ~
+
+>lua
+    local global_note = require("global-note")
+    global_note.setup({
+      additional_presets = {
+        project_local = {
+          command_name = "ProjectNote",
+    
+          filename = function()
+            return get_project_name() .. ".md"
+          end,
+    
+          title = "Project note",
+        },
+      }
+    })
+    
+    vim.keymap.set("n", "<leader>n", function()
+      global_note.toggle_note("project_local")
+    end, {
+      desc = "Toggle project note",
+    })
+<
+
+Git branch local notes ~
+
+>lua
+    local global_note = require("global-note")
+    global_note.setup({
+      additional_presets = {
+        git_branch_local = {
+          command_name = "GitBranchNote",
+    
+          directory = function()
+            return vim.fn.stdpath("data") .. "/global-note/" .. get_project_name()
+          end,
+    
+          filename = function()
+            local git_branch = get_git_branch()
+            if git_branch == nil then
+              return nil
+            end
+            return get_git_branch():gsub("[^%w-]", "-") .. ".md"
+          end,
+    
+          title = get_git_branch,
+        },
+      }
+    })
+    
+    vim.keymap.set("n", "<leader>n", function()
+      global_note.toggle_note("git_branch_local")
+    end, {
+      desc = "Toggle git branch note",
+    })
+<
+
+Functions for usecases above!:
+
+get_project_name() by cwd ~
 
 >lua
     local get_project_name = function()
@@ -159,7 +221,7 @@ get_project_name by cwd ~
     end
 <
 
-get_project_name by git ~
+get_project_name() by git ~
 
 >lua
     local get_project_name = function()
@@ -188,26 +250,26 @@ get_project_name by git ~
     end
 <
 
+get_git_branch() ~
+
 >lua
-    local global_note = require("global-note")
-    global_note.setup({
-      additional_presets = {
-        -- Presets that have the same fields as the table root (default preset).
-        project_local = {
-          filename = function()
-            return get_project_name() .. ".md"
-          end,
-          title = "Project note",
-          command_name = "ProjectNote",
-        },
-      }
-    })
+    local get_project_name = function()
+      local result = vim.system({
+        "git",
+        "symbolic-ref",
+        "--short",
+        "HEAD",
+      }, {
+        text = true,
+      }):wait()
     
-    vim.keymap.set("n", "<leader><S-n>", function()
-      global_note.toggle_note("project_local")
-    end, {
-      desc = "Toggle project note",
-    })
+      if result.stderr ~= "" then
+        vim.notify(result.stderr, vim.log.levels.WARN)
+        return nil
+      end
+    
+      return result.stdout:gsub("\n", "")
+    end
 <
 
 ==============================================================================
